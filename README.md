@@ -6,8 +6,8 @@ Rust's log facade is forcing Rust's users to use a text format for logging.
 
 While text works to convey information, it may not be the best way to do so.
 
-With tools like [Sentry](https://sentry.io) enable you to use those text logs quite comfortably,
-advanced logging visualization requires custom approaches, often involving expensive an error-prone text deserialization.
+Tools like [Sentry](https://sentry.io) enable you to use those text logs quite comfortably,
+but advanced logging visualization requires custom approaches, often involving expensive an error-prone text deserialization.
 
 [Rerun](https://rerun.io/) logging for a geometry crate for example, could help with understanding algorithms, or track bugs more easily.
 
@@ -21,4 +21,3 @@ This crate is very WIP, do not use, but! it may very well have more features at 
   - to filer logs depending on environment variables
 - tracing compatibility
   - span information is great and may unlock parallel logging visualizations...
-

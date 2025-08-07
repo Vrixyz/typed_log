@@ -10,13 +10,15 @@ fn main() {
         println!("Thanks for visiting my garden.")
     });
     typed_log::push_log_any(|garden: &dyn typed_log::Loggable| {
-        println!("the address of this garden is: {:p}", &garden);
+        println!("the address of this it sgarden is: {:p}", &garden);
     });
 
     library::make_a_garden();
 }
 
 mod library {
+    use std::any::TypeId;
+
     use typed_log::{Loggable, log_any};
 
     #[derive(Debug)]
@@ -24,7 +26,11 @@ mod library {
         pub flower_amount: usize,
     }
 
-    impl Loggable for Garden {}
+    impl Loggable for Garden {
+        fn type_id(&self) -> std::any::TypeId {
+            TypeId::of::<Self>()
+        }
+    }
 
     pub fn make_a_garden() {
         let garden = Garden { flower_amount: 10 };

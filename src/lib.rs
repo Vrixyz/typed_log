@@ -1,11 +1,25 @@
-use std::any::Any;
 use std::{any::TypeId, collections::HashMap};
 
 /// Empty trait that you should implement for anything you intend to log.
 ///
 /// This trait could be avoided, but it serves as a marker for users of your code who would like to provide custom logger:
 /// They should implement a logging implementation for all types implementing [Loggable].
-pub trait Loggable: Any {}
+pub trait Loggable {
+    fn as_ptr(&self) -> *const () {
+        self as *const Self as *const ()
+    }
+    fn type_id(&self) -> TypeId;
+}
+
+pub fn downcast_ref<'a, T: 'static>(loggable: &dyn Loggable) -> Option<&'a T> {
+    if loggable.type_id() == TypeId::of::<T>() {
+        let ptr = loggable.as_ptr();
+        // SAFETY: We checked that the type matches.
+        Some(unsafe { &*(ptr as *const T) })
+    } else {
+        None
+    }
+}
 
 pub type LogFnType = dyn Fn(&dyn Loggable) + Sync + Send;
 
@@ -19,12 +33,12 @@ static LOG_MAP: LazyLock<std::sync::RwLock<HashMap<TypeId, Vec<LogFn>>>> =
 // Global vec, less performant but more versatile.
 static LOG_VEC: std::sync::RwLock<Vec<LogFn>> = std::sync::RwLock::new(Vec::new());
 
-pub fn log_any<T: Loggable + 'static>(loggable: &T) {
+pub fn log_any<T: Loggable>(loggable: &T) {
     {
         let Ok(log_map) = LOG_MAP.read() else {
             return;
         };
-        let Some(log_functions) = log_map.get(&TypeId::of::<T>()) else {
+        let Some(log_functions) = log_map.get(&loggable.type_id()) else {
             return;
         };
         for log_function in log_functions {
@@ -54,7 +68,7 @@ pub fn push_log_impl<T: Loggable + 'static>(log_fn: impl Fn(&T) + Sync + Send + 
     // Wrap into a type-erased dyn Fn(&dyn Loggable)
     let wrapper = move |loggable: &dyn Loggable| {
         // Downcast the loggable to the expected concrete type
-        if let Some(concrete) = (loggable as &dyn std::any::Any).downcast_ref::<T>() {
+        if let Some(concrete) = downcast_ref::<T>(loggable) {
             log_fn(concrete);
         }
     };

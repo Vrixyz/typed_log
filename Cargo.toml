@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 description = "Logging shouldn't be limited to text."
 license = "MIT OR Apache-2.0"
+repository = "https://github.com/Vrixyz/typed_log"
 keywords = ["log", "type", "library"]
 
 [dependencies]
